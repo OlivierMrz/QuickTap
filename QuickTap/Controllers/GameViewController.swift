@@ -2,7 +2,7 @@
 //  GameViewController.swift
 //  QuickTap
 //
-//  Created by Olivier school on 03/03/2019.
+//  Created by Olivier Miserez on 03/03/2019.
 //  Copyright © 2019 Olivier Miserez. All rights reserved.
 //
 
@@ -220,12 +220,7 @@ class GameViewController: UIViewController {
         b.addTarget(self, action: #selector(backBtn_tapped), for: .touchUpInside)
         return b
     }()
-    
-    
-    
-    
-    
-    
+
     var themecolors : [String:UIColor] = ["gray": ColorPalette.gray,
                                           "blue": ColorPalette.blue,
                                           "purple": ColorPalette.purple,
@@ -235,7 +230,6 @@ class GameViewController: UIViewController {
                                           "yellow": ColorPalette.yellow,
                                           "orange": ColorPalette.orange,
                                           "green": ColorPalette.green]
-    
     
     var selectedRounds : Int = 1
     var round : Int = 1
@@ -261,7 +255,6 @@ class GameViewController: UIViewController {
         player2View.backgroundColor = themecolors[themeColor]
         
     }
-    
     
     // MARK: CountDown Timer - Begin Game
     var countDownTimer = Timer()
@@ -351,13 +344,8 @@ class GameViewController: UIViewController {
             p2ScoreLabel.text = "\(p2Points)"
         }
         
-        
-        
         countDownTimer.invalidate()
         timer.invalidate()
-        
-        
-        
         
         if round == selectedRounds {
             

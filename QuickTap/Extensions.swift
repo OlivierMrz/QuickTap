@@ -2,7 +2,7 @@
 //  Extensions.swift
 //  QuickTap
 //
-//  Created by Olivier school on 03/03/2019.
+//  Created by Olivier Miserez on 03/03/2019.
 //  Copyright © 2019 Olivier Miserez. All rights reserved.
 //
 
