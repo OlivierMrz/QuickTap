@@ -194,6 +194,7 @@ class GameViewController: UIViewController {
         let v = UIView()
         v.backgroundColor = .clear
         v.translatesAutoresizingMaskIntoConstraints = false
+        v.isUserInteractionEnabled = false
         return v
     }()
     
@@ -205,6 +206,25 @@ class GameViewController: UIViewController {
         return v
     }()
     lazy var endGameViewLeftContraint = self.endGameView.leftAnchor.constraint(equalTo: view.leftAnchor, constant: -(view.bounds.width))
+    
+    
+    let p1TapButton: UIButton = {
+        let b = UIButton()
+        b.setTitle("", for: .normal)
+        b.backgroundColor = .clear
+        b.addTarget(self, action: #selector(p1TapButton_tapped), for: .touchDown)
+        b.translatesAutoresizingMaskIntoConstraints = false
+        return b
+    }()
+    
+    let p2TapButton: UIButton = {
+        let b = UIButton()
+        b.setTitle("", for: .normal)
+        b.backgroundColor = .clear
+        b.addTarget(self, action: #selector(p2TapButton_tapped), for: .touchDown)
+        b.translatesAutoresizingMaskIntoConstraints = false
+        return b
+    }()
     
     
 
@@ -245,11 +265,9 @@ class GameViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        view.backgroundColor = .yellow
-        
         setupViews()
         
-        let themeColor = UserDefaults.standard.string(forKey: "themeColor") ?? "none"
+        let themeColor = UserDefaults.standard.string(forKey: "themeColor") ?? "gray"
         print(themeColor)
         player1View.backgroundColor = themecolors[themeColor]
         player2View.backgroundColor = themecolors[themeColor]
@@ -280,10 +298,6 @@ class GameViewController: UIViewController {
         
         runTimer()
         
-        mySensitiveArea = CGRect(x: 0, y: 0, width: view.bounds.width, height: view.bounds.height/2)
-        tapOnGameScreen = UITapGestureRecognizer(target: self, action: #selector(tapForWin(_:)))
-        testView.addGestureRecognizer(tapOnGameScreen!)
-        
         updateRoundsLabel()
         
         if selectedRounds == 8888 {
@@ -294,34 +308,44 @@ class GameViewController: UIViewController {
         
     }
     
-    @IBAction func tapForWin(_ gestureRecognizer: UIGestureRecognizer) {
-        let p = gestureRecognizer.location(in: self.view)
+    @IBAction func p1TapButton_tapped() {
+        p2TapButton.isEnabled = false
+        p1TapButton.isEnabled = false
+        timer.invalidate()
+        countDownTimer.invalidate()
+        print("button 1 tapped")
+        playerWins = 1
         
-        if mySensitiveArea!.contains(p) {
-            timer.invalidate()
-            print("Player 1 taps first")
-            tapOnGameScreen?.isEnabled = false
+        if seconds > 0 {
+            playerWins = 2
             
-            if seconds > 0 {
-                playerWins = 2
-                p1SecondsLabel.text = "You tapped to early! ☠️"
-            } else {
-                playerWins = 1
-//                p2SecondsLabel.text = "You tapped to early! ☠️"
-            }
-            
-        }
-        else {
-            timer.invalidate()
-            print("Player 2 taps first")
-            tapOnGameScreen?.isEnabled = false
-            if seconds > 0 {
-                playerWins = 1
-            } else {
-                playerWins = 2
-            }
+            p1SecondsLabel.text = "You tapped to early! ☠️"
+        } else {
+            playerWins = 1
         }
         
+        checkWinner()
+    }
+    
+    @IBAction func p2TapButton_tapped() {
+        p1TapButton.isEnabled = false
+        p2TapButton.isEnabled = false
+        timer.invalidate()
+        countDownTimer.invalidate()
+        print("button 2 tapped")
+        playerWins = 2
+        
+        if seconds > 0 {
+            playerWins = 1
+            p2SecondsLabel.text = "You tapped to early! ☠️"
+        } else {
+            playerWins = 2
+        }
+        
+        checkWinner()
+    }
+    
+    func checkWinner() {
         if playerWins == 1 {
             player1View.backgroundColor = ColorPalette.winnerGreen
             p1TapLabel.text = "WINNER"
@@ -352,7 +376,7 @@ class GameViewController: UIViewController {
             if p1Points > p2Points {
                 print("player 1 wins!")
                 p1WinnerView.startConfetti()
-
+                
             } else if p1Points < p2Points {
                 print("player 2 wins!")
                 p2WinnerView.startConfetti()
@@ -374,17 +398,16 @@ class GameViewController: UIViewController {
             performAfter(delay: 2) {
                 self.dismiss(animated: true, completion: nil)
             }
-
+            
         } else {
             
-            
+            self.testView.isUserInteractionEnabled = true
             UIView.animate(withDuration: 0.75) {
                 self.p1ReadyButton.alpha = 1
                 self.p2ReadyButton.alpha = 1
             }
             
         }
-        
     }
     
     func performAfter(delay: TimeInterval, completion: @escaping () -> Void) {
@@ -463,18 +486,23 @@ class GameViewController: UIViewController {
     
     func readyForNextRound() {
         if p1isReady && p2isReady {
+            
             print("play next round")
             
             round += 1
             updateRoundsLabel()
+        
             
             UIView.animate(withDuration: 0.75, delay: 0.5, options: .curveEaseOut, animations: {
                 self.p1ReadyButton.alpha = 0
                 self.p2ReadyButton.alpha = 0
             }) { (Bool) in
                 
+                self.p1TapButton.isEnabled = true
+                self.p2TapButton.isEnabled = true
+                
                 print("ready for next round")
-                let themeColor = UserDefaults.standard.string(forKey: "themeColor") ?? "none"
+                let themeColor = UserDefaults.standard.string(forKey: "themeColor") ?? "gray"
                 self.player1View.backgroundColor = self.themecolors[themeColor]
                 self.player2View.backgroundColor = self.themecolors[themeColor]
                 
@@ -493,7 +521,11 @@ class GameViewController: UIViewController {
                 self.p1SecondsLabel.text = ""
                 self.p2SecondsLabel.text = ""
                 
+                self.seconds = self.randomNumber
+                
             }
+            
+            self.testView.isUserInteractionEnabled = false
         }
     }
     
@@ -595,6 +627,23 @@ class GameViewController: UIViewController {
         view.addSubview(testView)
         testView.heightAnchor.constraint(equalToConstant: view.bounds.height).isActive = true
         testView.widthAnchor.constraint(equalToConstant: view.bounds.width).isActive = true
+        testView.isHidden = false
+        
+        
+        p1WinnerView.addSubview(p1TapButton)
+        p1TapButton.topAnchor.constraint(equalTo: p1WinnerView.topAnchor, constant: 0).isActive = true
+        p1TapButton.widthAnchor.constraint(equalToConstant: view.bounds.width).isActive = true
+        p1TapButton.heightAnchor.constraint(equalToConstant: view.bounds.height/2).isActive = true
+        p1TapButton.isHidden = false
+        
+        p2WinnerView.addSubview(p2TapButton)
+        p2TapButton.bottomAnchor.constraint(equalTo: p2WinnerView.bottomAnchor, constant: 0).isActive = true
+        p2TapButton.widthAnchor.constraint(equalToConstant: view.bounds.width).isActive = true
+        p2TapButton.heightAnchor.constraint(equalToConstant: view.bounds.height/2).isActive = true
+        p2TapButton.isHidden = false
+        
+        
+        
         
         // ready button
         testView.addSubview(p1ReadyButton)
@@ -633,6 +682,7 @@ class GameViewController: UIViewController {
     
     
     @IBAction func backBtn_tapped() {
+        countDownTimer.invalidate()
         timer.invalidate()
         p1WinnerView.stopConfetti()
         p2WinnerView.stopConfetti()

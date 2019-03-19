@@ -167,7 +167,7 @@ extension SettingsViewController: UICollectionViewDataSource, UICollectionViewDe
         cell.backgroundColor = colorArray[indexPath.row]
         cell.layer.cornerRadius = 6
         
-        let themeColor = UserDefaults.standard.string(forKey: "themeColor") ?? "none"
+        let themeColor = UserDefaults.standard.string(forKey: "themeColor") ?? "gray"
         var currentColorIndex: IndexPath = [0,0]
         for (index, color) in colorArrayNames.enumerated() {
             if color == themeColor {
