@@ -58,6 +58,7 @@ class GameViewController: UIViewController {
         let l = UILabel()
         l.textColor = .black
         l.text = "TAP"
+        l.textAlignment = .center
         l.font = UIFont(name:"Run! Demo",size:28)
         l.sizeToFit()
         l.translatesAutoresizingMaskIntoConstraints = false
@@ -143,6 +144,7 @@ class GameViewController: UIViewController {
         let l = UILabel()
         l.textColor = .black
         l.text = "TAP"
+        l.textAlignment = .center
         l.font = UIFont(name:"Run! Demo",size:28)
         l.sizeToFit()
         l.translatesAutoresizingMaskIntoConstraints = false
@@ -284,7 +286,7 @@ class GameViewController: UIViewController {
     var time: Double = 0
     var millisecondsString: String = ""
     
-    let randomNumber = Int.random(in: 1...5)
+    
     
     
     // Area detection
@@ -293,7 +295,8 @@ class GameViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-    
+        
+        let randomNumber = Int.random(in: 1...5)
         seconds = randomNumber
         
         runTimer()
@@ -507,7 +510,6 @@ class GameViewController: UIViewController {
                 self.player2View.backgroundColor = self.themecolors[themeColor]
                 
                 self.colorLine.backgroundColor = ColorPalette.redStopLine
-                self.seconds = self.randomNumber
                 self.runTimer()
                 self.tapOnGameScreen?.isEnabled = true
                 self.p1isReady = false
@@ -521,7 +523,8 @@ class GameViewController: UIViewController {
                 self.p1SecondsLabel.text = ""
                 self.p2SecondsLabel.text = ""
                 
-                self.seconds = self.randomNumber
+                let randomNumber = Int.random(in: 1...5)
+                self.seconds = randomNumber
                 
             }
             
@@ -564,6 +567,7 @@ class GameViewController: UIViewController {
         p1ScoreLabel.centerXAnchor.constraint(equalTo: player1View.centerXAnchor).isActive = true
         
         player1View.addSubview(p1TapLabel)
+        p1TapLabel.widthAnchor.constraint(equalToConstant: view.bounds.width).isActive = true
         p1TapLabel.centerXAnchor.constraint(equalTo: player1View.centerXAnchor).isActive = true
         p1TapLabel.centerYAnchor.constraint(equalTo: player1View.centerYAnchor, constant: -30).isActive = true
         
@@ -599,6 +603,7 @@ class GameViewController: UIViewController {
         p2ScoreLabel.centerXAnchor.constraint(equalTo: player2View.centerXAnchor).isActive = true
         
         player2View.addSubview(p2TapLabel)
+        p2TapLabel.widthAnchor.constraint(equalToConstant: view.bounds.width).isActive = true
         p2TapLabel.centerXAnchor.constraint(equalTo: player2View.centerXAnchor).isActive = true
         p2TapLabel.centerYAnchor.constraint(equalTo: player2View.centerYAnchor, constant: -30).isActive = true
         

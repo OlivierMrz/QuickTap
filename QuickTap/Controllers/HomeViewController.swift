@@ -8,15 +8,17 @@
 
 import UIKit
 
-class HomeViewController: UIViewController, UICollectionViewDelegate {
+class HomeViewController: UIViewController, UICollectionViewDelegate, UITextFieldDelegate, UIPickerViewDataSource, UIPickerViewDelegate {
     
     
     let scrollView: UIScrollView = {
         let v = UIScrollView()
+        v.frame = .zero
         v.translatesAutoresizingMaskIntoConstraints = false
         v.backgroundColor = ColorPalette.gray
         return v
     }()
+    
     
     let titleLabel: UILabel = {
         let lbl = UILabel()
@@ -104,11 +106,27 @@ class HomeViewController: UIViewController, UICollectionViewDelegate {
         return btn
     }()
     
-    let rounds : [Int] = [1, 3, 5, 8888]
+    let pickerView : UIPickerView = {
+        let p = UIPickerView()
+        p.translatesAutoresizingMaskIntoConstraints = false
+        p.backgroundColor = ColorPalette.white
+        return p
+    }()
+    lazy var pickerViewBottomConstraints = pickerView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: 200)
+    var pickerViewRoundsArray : [Int] = []
+    
+    var rounds : [Int] = [1, 3, 5, 8888, 9999]
     var selectedRound : Int = 1
+
+    
+    fileprivate var activeField: UITextField?
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        for i in 6...99 {
+            pickerViewRoundsArray.append(i)
+        }
         
         view.backgroundColor = ColorPalette.gray
         
@@ -131,31 +149,11 @@ class HomeViewController: UIViewController, UICollectionViewDelegate {
         
         playButton.addTarget(self, action: #selector(playGameBtn), for: .touchUpInside)
         
+        pickerView.dataSource = self
+        pickerView.delegate = self
         
-        // setup keyboard event
-        NotificationCenter.default.addObserver(self, selector: #selector(self.keyboardWillShow), name:UIResponder.keyboardWillShowNotification, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(self.keyboardWillHide), name:UIResponder.keyboardWillHideNotification, object: nil)
         
     }
-    
-    @objc func keyboardWillShow(notification:NSNotification){
-        var userInfo = notification.userInfo!
-        var keyboardFrame:CGRect = (userInfo[UIResponder.keyboardFrameBeginUserInfoKey] as! NSValue).cgRectValue
-        keyboardFrame = self.view.convert(keyboardFrame, from: nil)
-        
-        var contentInset:UIEdgeInsets = self.scrollView.contentInset
-        contentInset.bottom = keyboardFrame.size.height
-        scrollView.contentInset = contentInset
-    }
-    
-    @objc func keyboardWillHide(notification:NSNotification){
-        
-        let contentInset:UIEdgeInsets = UIEdgeInsets.zero
-        scrollView.contentInset = contentInset
-    }
-    
-    
-    
     
     @IBAction func playGameBtn() {
         let GameVC = GameViewController()
@@ -169,6 +167,8 @@ class HomeViewController: UIViewController, UICollectionViewDelegate {
         let newViewController = SettingsViewController()
         self.navigationController?.pushViewController(newViewController, animated: true)
     }
+    
+    var numberToolbar: UIToolbar?
     
     func setupView() {
         
@@ -196,7 +196,7 @@ class HomeViewController: UIViewController, UICollectionViewDelegate {
         selectRoundsCollectionView.topAnchor.constraint(equalTo: selectRoundsSubLabel.bottomAnchor, constant: 0).isActive = true
         selectRoundsCollectionView.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 0).isActive = true
         selectRoundsCollectionView.widthAnchor.constraint(equalToConstant: view.bounds.width).isActive = true
-        selectRoundsCollectionView.heightAnchor.constraint(equalToConstant: 50*2+42).isActive = true
+        selectRoundsCollectionView.heightAnchor.constraint(equalToConstant: 50*3+52).isActive = true
         
         // add player names label
         scrollView.addSubview(setPlayerNamesLabel)
@@ -227,34 +227,45 @@ class HomeViewController: UIViewController, UICollectionViewDelegate {
         playButton.heightAnchor.constraint(equalToConstant: 50).isActive = true
         playButton.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor, constant: -16).isActive = true
         
-        
-        
-        
-        let numberToolbar = UIToolbar(frame:CGRect(x: 0, y: 0, width: UIScreen.main.bounds.width, height: 50))
-        numberToolbar.barStyle = .default
-        numberToolbar.items = [
-            UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil),
-            UIBarButtonItem(title: "Done", style: .plain, target: self, action: #selector(doneWithNumberPad))]
-        numberToolbar.sizeToFit()
-        playerTwoNameTextField.inputAccessoryView = numberToolbar
-        playerOneNameTextField.inputAccessoryView = numberToolbar
-            
-        
-        
-        
-        
+        view.addSubview(pickerView)
+        pickerView.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 0).isActive = true
+        pickerView.rightAnchor.constraint(equalTo: view.rightAnchor, constant: 0).isActive = true
+        pickerViewBottomConstraints.isActive = true
         
     }
 
     @IBAction func doneWithNumberPad() {
         self.view.endEditing(true)
     }
+    
+    func numberOfComponents(in pickerView: UIPickerView) -> Int {
+        return 1
+    }
+    func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
+        return pickerViewRoundsArray.count
+    }
+    func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
+        return String(pickerViewRoundsArray[row])
+    }
+    func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
+        print(pickerViewRoundsArray[row])
+        
+        let cell = selectRoundsCollectionView.cellForItem(at: [0,4]) as! roundsCell
+        cell.label.text = "Selected rounds: \(pickerViewRoundsArray[row])"
+        
+        selectedRound = pickerViewRoundsArray[row]
+
+        pickerViewBottomConstraints.constant = 200
+        UIView.animate(withDuration: 0.2) {
+            self.view.layoutIfNeeded()
+        }
+    }
 
 }
 
 extension HomeViewController: UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return 4
+        return 5
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -278,6 +289,8 @@ extension HomeViewController: UICollectionViewDataSource, UICollectionViewDelega
             cell.label.text = "5"
         } else if indexPath.row == 3 {
             cell.label.text = "Endless mode"
+        } else if indexPath.row == 4 {
+            cell.label.text = "Select rounds"
         }
         
         
@@ -290,6 +303,8 @@ extension HomeViewController: UICollectionViewDataSource, UICollectionViewDelega
         
         if indexPath.item == 3 {
             return CGSize(width: selectRoundsCollectionView.bounds.width - 32, height: (200/4))
+        } else if indexPath.item == 4 {
+            return CGSize(width: selectRoundsCollectionView.bounds.width - 32, height: (200/4))
         } else {
             return CGSize(width: (selectRoundsCollectionView.bounds.width)/3 - 20, height: (200/4))
         }
@@ -297,10 +312,11 @@ extension HomeViewController: UICollectionViewDataSource, UICollectionViewDelega
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        
         let cell = selectRoundsCollectionView.cellForItem(at: indexPath) as! roundsCell
         
         selectRoundsCollectionView.selectItem(at: indexPath, animated: true, scrollPosition: .left)
-
+        
         
         
         cell.layer.shadowPath = UIBezierPath(rect: cell.bounds).cgPath
@@ -308,8 +324,15 @@ extension HomeViewController: UICollectionViewDataSource, UICollectionViewDelega
         cell.layer.shadowOffset = .zero
         cell.layer.shadowOpacity = 0.75
         
-//        print("rounds off: ", rounds[indexPath.row])
+        //        print("rounds off: ", rounds[indexPath.row])
         selectedRound = rounds[indexPath.row]
+        
+        if indexPath.row == 4 {
+            pickerViewBottomConstraints.constant = 0
+            UIView.animate(withDuration: 0.2) {
+                self.view.layoutIfNeeded()
+            }
+        }
         
     }
     func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
